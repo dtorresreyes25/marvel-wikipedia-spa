@@ -1,14 +1,5 @@
 import { HeroEntity } from '../entities/hero.entity';
-
-interface HeroApiResponse {
-  nameLabel: string;
-  genderLabel: string;
-  citizenshipLabel: string;
-  skillsLabel: string;
-  occupationLabel: string;
-  memberOfLabel: string;
-  creatorLabel: string;
-}
+import { HeroApiResponse } from '../repository/hero.repository';
 
 export class HeroMapper {
   static fromApi(response: HeroApiResponse[]): HeroEntity[] {
