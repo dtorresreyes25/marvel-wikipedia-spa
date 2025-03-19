@@ -1,3 +1,4 @@
+import { HeroEntity } from '../entities/hero.entity';
 import { Observable } from 'rxjs';
 
 export interface HeroApiResponse {
@@ -11,5 +12,8 @@ export interface HeroApiResponse {
 }
 
 export abstract class HeroRepository {
-  abstract getHeroes(): Observable<HeroApiResponse[]>;
+  abstract getHeroes(): HeroEntity[];
+  abstract addHero(hero: HeroEntity): void;
+  abstract removeHero(heroName: string): void;
+  abstract getHeroes$(): Observable<HeroEntity[]>;
 }
