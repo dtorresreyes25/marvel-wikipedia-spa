@@ -4,7 +4,9 @@ import {
   ViewChild,
   OnChanges,
   SimpleChanges,
-  AfterViewInit
+  AfterViewInit,
+  EventEmitter,
+  Output
 } from '@angular/core';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -50,13 +52,22 @@ import { HeroEntity } from '../../../domain/entities/hero.entity';
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="columns"></tr>
-      <tr mat-row *matRowDef="let row; columns: columns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: columns"
+        (click)="selectHero(row)"
+        class="clickable-row"
+      ></tr>
     </table>
   `,
   styles: [
     `
       table {
         width: 100%;
+      }
+
+      .clickable-row {
+        cursor: pointer;
       }
     `
   ],
@@ -66,6 +77,7 @@ import { HeroEntity } from '../../../domain/entities/hero.entity';
 export class HeroTableComponent implements OnChanges, AfterViewInit {
   @Input() data: HeroEntity[] | null = [];
   @ViewChild(MatSort) sort!: MatSort;
+  @Output() onHeroSelected = new EventEmitter<HeroEntity>();
 
   dataSource = new MatTableDataSource<HeroEntity>();
   columns = ['name', 'gender', 'citizenship', 'skills', 'occupation', 'memberOf', 'creator'];
@@ -78,5 +90,9 @@ export class HeroTableComponent implements OnChanges, AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
+  }
+
+  selectHero(hero: HeroEntity): void {
+    this.onHeroSelected.emit(hero);
   }
 }
