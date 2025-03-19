@@ -64,7 +64,7 @@ import { HeroEntity } from '../../../domain/entities/hero.entity';
   imports: [MatTableModule, MatSortModule]
 })
 export class HeroTableComponent implements OnChanges, AfterViewInit {
-  @Input() data!: HeroEntity[];
+  @Input() data: HeroEntity[] | null = [];
   @ViewChild(MatSort) sort!: MatSort;
 
   dataSource = new MatTableDataSource<HeroEntity>();

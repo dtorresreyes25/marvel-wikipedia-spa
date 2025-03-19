@@ -1,17 +1,35 @@
 import { Component, OnInit } from '@angular/core';
-import { HeroFilterComponent } from '../../components/filter/filter.component';
 import { HeroTableComponent } from '../../components/table/table.component';
+import { HeroFilterComponent } from '../../components/filter/filter.component';
+import { Observable } from 'rxjs';
+import { HeroEntity } from '../../../domain/entities/hero.entity';
+import { HeroGridPageViewModel } from './hero-grid.view';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-hero-grid-page',
   template: `
-    <app-hero-filter />
-    <app-hero-table />
+    <app-hero-filter></app-hero-filter>
+    <app-hero-table [data]="heroes$ | async"></app-hero-table>
   `,
-  styles: [``],
   standalone: true,
-  imports: [HeroTableComponent, HeroFilterComponent]
+  providers: [HeroGridPageViewModel],
+  imports: [HeroTableComponent, HeroFilterComponent, AsyncPipe]
 })
 export class HeroGridPage implements OnInit {
-  ngOnInit(): void {}
+  heroes$!: Observable<HeroEntity[]>;
+
+  constructor(private viewModel: HeroGridPageViewModel) {}
+
+  ngOnInit(): void {
+    this.heroes$ = this.viewModel.getHeroes();
+  }
+
+  searchHeroes(term: string): void {
+    this.heroes$ = this.viewModel.searchHeroes(term);
+  }
+
+  addHero(hero: HeroEntity): void {}
+  onEditHero(hero: HeroEntity): void {}
+  onRemoveHero(heroName: string): void {}
 }
