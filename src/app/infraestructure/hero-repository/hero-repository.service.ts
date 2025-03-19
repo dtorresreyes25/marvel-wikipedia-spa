@@ -10,16 +10,15 @@ import { HeroMapper } from '../../domain/mapper/hero.mapper';
 })
 export class HeroRepository {
   private readonly apiUrl = 'assets/heroes.json';
-  private heroListSubject = new BehaviorSubject<HeroEntity[]>([]);
+  private readonly heroListSubject = new BehaviorSubject<HeroEntity[]>([]);
 
-  constructor(private http: HttpClient) {
+  constructor(private readonly http: HttpClient) {
     this.loadHeroes();
   }
 
   private loadHeroes(): void {
     this.http.get<HeroApiResponse[]>(this.apiUrl).subscribe((response) => {
-      const heroes = HeroMapper.fromApi(response);
-      this.heroListSubject.next(heroes);
+      this.setHeroes(HeroMapper.fromApi(response));
     });
   }
 
@@ -28,18 +27,24 @@ export class HeroRepository {
   }
 
   getHeroes(): HeroEntity[] {
-    return this.heroListSubject.getValue();
+    return this.heroListSubject.value;
+  }
+
+  heroExists(heroName: string): boolean {
+    return this.getHeroes().some((hero) => hero.name.toLowerCase() === heroName.toLowerCase());
   }
 
   addHero(hero: HeroEntity): void {
-    const heroes = this.getHeroes();
-    heroes.push(hero);
-    this.heroListSubject.next(heroes);
+    if (!this.heroExists(hero.name)) {
+      this.setHeroes([...this.getHeroes(), hero]);
+    }
   }
 
   removeHero(heroName: string): void {
-    const heroes = this.getHeroes();
-    const updatedHeroes = heroes.filter((hero) => hero.name !== heroName);
-    this.heroListSubject.next(updatedHeroes);
+    this.setHeroes(this.getHeroes().filter((hero) => hero.name !== heroName));
+  }
+
+  private setHeroes(heroes: HeroEntity[]): void {
+    this.heroListSubject.next(heroes);
   }
 }

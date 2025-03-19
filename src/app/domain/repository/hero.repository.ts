@@ -16,4 +16,5 @@ export abstract class HeroRepository {
   abstract addHero(hero: HeroEntity): void;
   abstract removeHero(heroName: string): void;
   abstract getHeroes$(): Observable<HeroEntity[]>;
+  abstract heroExists(heroName: string): boolean;
 }
