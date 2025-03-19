@@ -8,7 +8,7 @@ import { HeroMapper } from '../../domain/mapper/hero.mapper';
 @Injectable({
   providedIn: 'root'
 })
-export class HeroRepository {
+export class HeroRepositoryService {
   private readonly apiUrl = 'assets/heroes.json';
   private readonly heroListSubject = new BehaviorSubject<HeroEntity[]>([]);
 

@@ -1,51 +1,32 @@
-import { Component } from '@angular/core';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import {
-  MatAutocomplete,
-  MatAutocompleteSelectedEvent,
-  MatAutocompleteTrigger,
-  MatOption
-} from '@angular/material/autocomplete';
+import { Component, EventEmitter, Output } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { FormsModule } from '@angular/forms';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { NgForOf } from '@angular/common';
 
 @Component({
   selector: 'app-hero-filter',
   template: `
-    <form>
-      <mat-form-field class="hero-names-list">
-        <mat-label>Heroes</mat-label>
-        <mat-chip-grid #chipGrid aria-label="Hero selection">
-          <mat-chip-row
-            *ngFor="let heroName of heroNames; trackBy: trackByIndex"
-            (removed)="remove(heroName)"
-          >
-            {{ heroName }}
-            <button matChipRemove [attr.aria-label]="'remove ' + heroName">
-              <mat-icon>cancel</mat-icon>
-            </button>
-          </mat-chip-row>
-        </mat-chip-grid>
-
+    <mat-form-field class="hero-names-list" appearance="fill">
+      <mat-label>Hero name filter</mat-label>
+      <mat-chip-grid #chipGrid aria-label="Hero name selection">
         <input
-          name="currentHero"
-          placeholder="New Hero..."
-          [(ngModel)]="currentHero"
+          [formControl]="heroNameControl"
+          placeholder="Type a hero name..."
           [matChipInputFor]="chipGrid"
-          [matAutocomplete]="auto"
           [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
           (matChipInputTokenEnd)="add($event)"
-          aria-label="Add hero input"
         />
-        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-          <mat-option *ngFor="let hero of filteredHeroes" [value]="hero">{{ hero }}</mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
-    </form>
+
+        <mat-chip *ngFor="let name of names" [removable]="true" (removed)="remove(name)">
+          {{ name }} <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip>
+      </mat-chip-grid>
+    </mat-form-field>
   `,
+  standalone: true,
   styles: [
     `
       .hero-names-list {
@@ -53,31 +34,36 @@ import { NgForOf } from '@angular/common';
       }
     `
   ],
-  imports: [
-    MatFormFieldModule,
-    MatChipsModule,
-    MatIconModule,
-    FormsModule,
-    NgForOf,
-    MatAutocomplete,
-    MatOption,
-    MatAutocompleteTrigger
-  ]
+  imports: [MatFormFieldModule, MatChipsModule, MatIconModule, ReactiveFormsModule, NgForOf]
 })
 export class HeroFilterComponent {
-  currentHero: string = '';
+  private namesSet = new Set<string>();
+  readonly separatorKeysCodes = [ENTER, COMMA];
+  readonly heroNameControl = new FormControl('');
 
-  readonly heroNames: string[] = [];
-  readonly filteredHeroes: string[] = [];
-  readonly separatorKeysCodes: number[] = [ENTER, COMMA];
+  @Output() onFilterChange = new EventEmitter<string[]>();
 
-  add(event: MatChipInputEvent): void {}
+  get names(): string[] {
+    return Array.from(this.namesSet);
+  }
 
-  remove(heroName: string): void {}
+  add(event: MatChipInputEvent): void {
+    const value = event.value.trim();
 
-  selected(event: MatAutocompleteSelectedEvent): void {}
+    if (value && !this.namesSet.has(value)) {
+      this.namesSet.add(value);
+      this.emitChange();
+    }
+    event.chipInput.clear();
+  }
 
-  trackByIndex(index: number): number {
-    return index;
+  remove(name: string): void {
+    if (this.namesSet.delete(name)) {
+      this.emitChange();
+    }
+  }
+
+  private emitChange(): void {
+    this.onFilterChange.emit(this.names);
   }
 }

@@ -9,7 +9,7 @@ import { AsyncPipe } from '@angular/common';
 @Component({
   selector: 'app-hero-grid-page',
   template: `
-    <app-hero-filter></app-hero-filter>
+    <app-hero-filter (onFilterChange)="searchHeroes($event)"></app-hero-filter>
     <app-hero-table [data]="heroes$ | async"></app-hero-table>
   `,
   standalone: true,
@@ -25,8 +25,8 @@ export class HeroGridPage implements OnInit {
     this.heroes$ = this.viewModel.getHeroes();
   }
 
-  searchHeroes(term: string): void {
-    this.heroes$ = this.viewModel.searchHeroes(term);
+  searchHeroes(terms: string[]): void {
+    this.heroes$ = this.viewModel.searchHeroes(terms);
   }
 
   addHero(hero: HeroEntity): void {}

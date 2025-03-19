@@ -19,8 +19,8 @@ export class HeroGridPageViewModel {
     return this.getHeroesUseCase.execute();
   }
 
-  searchHeroes(term: string): Observable<HeroEntity[]> {
-    return this.searchHeroesUseCase.execute(term);
+  searchHeroes(terms: string[]): Observable<HeroEntity[]> {
+    return this.searchHeroesUseCase.execute(terms);
   }
 
   addHero(hero: HeroEntity): void {

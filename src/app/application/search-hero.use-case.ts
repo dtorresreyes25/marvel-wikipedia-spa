@@ -9,12 +9,16 @@ import { Observable, map } from 'rxjs';
 export class SearchHeroesUseCase {
   constructor(private heroRepository: HeroRepository) {}
 
-  execute(term: string): Observable<HeroEntity[]> {
+  execute(terms: string[]): Observable<HeroEntity[]> {
     return this.heroRepository
       .getHeroes$()
       .pipe(
         map((heroes) =>
-          heroes.filter((hero) => hero.name.toLowerCase().includes(term.toLowerCase()))
+          terms.length === 0
+            ? heroes
+            : heroes.filter((hero) =>
+                terms.some((term) => hero.name.toLowerCase().includes(term.toLowerCase()))
+              )
         )
       );
   }
