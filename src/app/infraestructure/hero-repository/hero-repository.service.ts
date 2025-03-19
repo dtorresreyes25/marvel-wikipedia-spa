@@ -36,7 +36,7 @@ export class HeroRepositoryService {
 
   addHero(hero: HeroEntity): void {
     if (!this.heroExists(hero.name)) {
-      this.setHeroes([...this.getHeroes(), hero]);
+      this.setHeroes([hero, ...this.getHeroes()]);
     }
   }
 

@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { GetHeroesUseCase } from '../../../application/get-heroes.use-case';
 import { MatDialog } from '@angular/material/dialog';
 import { HeroViewComponent } from '../../components/hero-view/hero-view.component';
+import { HeroFormComponent } from '../../components/hero-form/hero-form.component';
 
 @Injectable()
 export class HeroGridPageViewModel {
@@ -26,8 +27,14 @@ export class HeroGridPageViewModel {
     return this.searchHeroesUseCase.execute(terms);
   }
 
-  addHero(hero: HeroEntity): void {
-    this.addHeroUseCase.execute(hero);
+  addHero(): void {
+    const dialogRef = this.dialog.open(HeroFormComponent);
+
+    dialogRef.afterClosed().subscribe((newHero: HeroEntity | undefined) => {
+      if (newHero) {
+        this.addHeroUseCase.execute(newHero);
+      }
+    });
   }
 
   removeHero(heroName: string): void {
