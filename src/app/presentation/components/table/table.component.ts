@@ -12,19 +12,30 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { HeroEntity } from '../../../domain/entities/hero.entity';
 import { MatButtonModule } from '@angular/material/button';
+import { ChartComponent } from '../chart/chart.component';
+import { CdkTableModule } from '@angular/cdk/table';
 import { NgForOf, TitleCasePipe } from '@angular/common';
 
 @Component({
   selector: 'app-hero-table',
   template: `
     <table mat-table [dataSource]="dataSource" matSort>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="chartColumnsWithEmpty"></tr>
+
       <ng-container *ngFor="let column of columnsData" [matColumnDef]="column">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header [hidden]="isHiddenColumn(column)">
-          {{ column | titlecase }}
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ column | titlecase }}</th>
+        <td mat-cell *matCellDef="let element" class="clickable-cell">{{ element[column] }}</td>
+      </ng-container>
+
+      <ng-container *ngFor="let column of columnsData" [matColumnDef]="'chart-' + column">
+        <th mat-header-cell *matHeaderCellDef class="chart-cell">
+          <app-hero-chart [column]="column" [data]="dataSource.data"></app-hero-chart>
         </th>
-        <td mat-cell *matCellDef="let row" class="clickable-row" [hidden]="isHiddenColumn(column)">
-          {{ row[column] }}
-        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="chart-actions">
+        <th mat-header-cell *matHeaderCellDef></th>
       </ng-container>
 
       <ng-container matColumnDef="actions">
@@ -37,12 +48,7 @@ import { NgForOf, TitleCasePipe } from '@angular/common';
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="columns"></tr>
-      <tr
-        mat-row
-        *matRowDef="let row; columns: columns"
-        (click)="selectHero(row); $event.stopPropagation()"
-      ></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="selectHero(row)"></tr>
     </table>
   `,
   styles: [
@@ -51,8 +57,17 @@ import { NgForOf, TitleCasePipe } from '@angular/common';
         width: 100%;
       }
 
-      .clickable-row {
+      .clickable-cell {
         cursor: pointer;
+      }
+
+      .chart-cell {
+        padding: 1rem;
+      }
+
+      canvas {
+        width: 100%;
+        height: 100%;
       }
 
       mat-button {
@@ -64,7 +79,15 @@ import { NgForOf, TitleCasePipe } from '@angular/common';
     `
   ],
   standalone: true,
-  imports: [MatTableModule, MatSortModule, MatButtonModule, NgForOf, TitleCasePipe]
+  imports: [
+    MatTableModule,
+    MatSortModule,
+    MatButtonModule,
+    CdkTableModule,
+    ChartComponent,
+    NgForOf,
+    TitleCasePipe
+  ]
 })
 export class HeroTableComponent implements OnChanges, AfterViewInit {
   @Input() data: HeroEntity[] | null = [];
@@ -74,10 +97,7 @@ export class HeroTableComponent implements OnChanges, AfterViewInit {
   @Output() onHeroEdited = new EventEmitter<HeroEntity>();
   @Output() onHeroSelected = new EventEmitter<HeroEntity>();
 
-  readonly dataSource = new MatTableDataSource<HeroEntity>();
-
   readonly columnsData = [
-    'id',
     'name',
     'gender',
     'citizenship',
@@ -86,8 +106,12 @@ export class HeroTableComponent implements OnChanges, AfterViewInit {
     'memberOf',
     'creator'
   ];
+  readonly displayedColumns = [...this.columnsData, 'actions'];
 
-  readonly columns = [...this.columnsData, 'actions'];
+  readonly chartColumns = this.columnsData.map((column) => 'chart-' + column);
+  readonly chartColumnsWithEmpty = [...this.chartColumns, 'chart-actions'];
+
+  dataSource = new MatTableDataSource<HeroEntity>();
 
   ngOnChanges({ data }: SimpleChanges) {
     if (data) {
@@ -109,9 +133,5 @@ export class HeroTableComponent implements OnChanges, AfterViewInit {
 
   deleteHero(hero: HeroEntity): void {
     this.onHeroDeleted.emit(hero.id);
-  }
-
-  isHiddenColumn(column: string): boolean {
-    return column === 'id';
   }
 }
