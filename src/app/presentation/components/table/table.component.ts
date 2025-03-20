@@ -19,7 +19,12 @@ import { NgForOf, NgIf, TitleCasePipe } from '@angular/common';
 @Component({
   selector: 'app-hero-table',
   template: `
-    <table mat-table [dataSource]="dataSource" matSort>
+    <table
+      *ngIf="dataSource.data.length > 0; else noDataTemplate"
+      mat-table
+      [dataSource]="dataSource"
+      matSort
+    >
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-header-row *matHeaderRowDef="chartColumnsWithEmpty"></tr>
 
@@ -59,11 +64,27 @@ import { NgForOf, NgIf, TitleCasePipe } from '@angular/common';
 
       <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="selectHero(row)"></tr>
     </table>
+
+    <ng-template #noDataTemplate>
+      <div class="no-data-message">
+        <p>No heroes found...</p>
+      </div>
+    </ng-template>
   `,
   styles: [
     `
       table {
         width: 100%;
+      }
+
+      .no-data-message {
+        font-style: italic;
+        text-align: center;
+        color: #888;
+        font-size: 1rem;
+        padding: 10px;
+        margin: auto;
+        width: fit-content;
       }
 
       .clickable-cell {
@@ -139,6 +160,7 @@ export class HeroTableComponent implements OnChanges, AfterViewInit {
   ngOnChanges({ data }: SimpleChanges) {
     if (data) {
       this.dataSource.data = data.currentValue || [];
+      this.dataSource._updateChangeSubscription();
     }
   }
 
