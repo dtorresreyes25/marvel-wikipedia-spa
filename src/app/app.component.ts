@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { HeroGridPage } from './presentation/pages/hero-grid/hero-grid.page';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  template: ` <app-hero-grid-page></app-hero-grid-page> `,
+  standalone: true,
+  imports: [HeroGridPage]
 })
-export class AppComponent {
-  title = 'marvel-wikipedia-spa';
-}
+export class AppComponent {}
