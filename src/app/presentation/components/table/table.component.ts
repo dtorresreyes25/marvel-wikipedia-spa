@@ -14,7 +14,7 @@ import { HeroEntity } from '../../../domain/entities/hero.entity';
 import { MatButtonModule } from '@angular/material/button';
 import { ChartComponent } from '../chart/chart.component';
 import { CdkTableModule } from '@angular/cdk/table';
-import { NgForOf, TitleCasePipe } from '@angular/common';
+import { NgForOf, NgIf, TitleCasePipe } from '@angular/common';
 
 @Component({
   selector: 'app-hero-table',
@@ -30,7 +30,16 @@ import { NgForOf, TitleCasePipe } from '@angular/common';
 
       <ng-container *ngFor="let column of columnsData" [matColumnDef]="'chart-' + column">
         <th mat-header-cell *matHeaderCellDef class="chart-cell">
-          <app-hero-chart [column]="column" [data]="dataSource.data"></app-hero-chart>
+          <ng-container *ngIf="column !== 'name'; else showTotal">
+            <app-hero-chart [column]="column" [data]="dataSource.data"></app-hero-chart>
+          </ng-container>
+
+          <ng-template #showTotal>
+            <span class="total-cell">
+              <strong>{{ getTotalNames(dataSource.data) }}</strong>
+              <p>unique values</p>
+            </span>
+          </ng-template>
         </th>
       </ng-container>
 
@@ -65,6 +74,19 @@ import { NgForOf, TitleCasePipe } from '@angular/common';
         padding: 1rem;
       }
 
+      .total-cell {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .total-cell strong {
+        font-weight: bolder;
+        font-size: 1.5rem;
+        color: #3f51b5;
+      }
+
       canvas {
         width: 100%;
         height: 100%;
@@ -86,7 +108,8 @@ import { NgForOf, TitleCasePipe } from '@angular/common';
     CdkTableModule,
     ChartComponent,
     NgForOf,
-    TitleCasePipe
+    TitleCasePipe,
+    NgIf
   ]
 })
 export class HeroTableComponent implements OnChanges, AfterViewInit {
@@ -133,5 +156,9 @@ export class HeroTableComponent implements OnChanges, AfterViewInit {
 
   deleteHero(hero: HeroEntity): void {
     this.onHeroDeleted.emit(hero.id);
+  }
+
+  getTotalNames(data: any[]): number {
+    return data.filter((item) => item.name).length;
   }
 }
