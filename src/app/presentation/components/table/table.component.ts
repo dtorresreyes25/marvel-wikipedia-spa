@@ -11,52 +11,37 @@ import {
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { HeroEntity } from '../../../domain/entities/hero.entity';
+import { MatButtonModule } from '@angular/material/button';
+import { NgForOf, TitleCasePipe } from '@angular/common';
 
 @Component({
   selector: 'app-hero-table',
   template: `
     <table mat-table [dataSource]="dataSource" matSort>
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-        <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+      <ng-container *ngFor="let column of columnsData" [matColumnDef]="column">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header [hidden]="isHiddenColumn(column)">
+          {{ column | titlecase }}
+        </th>
+        <td mat-cell *matCellDef="let row" class="clickable-row" [hidden]="isHiddenColumn(column)">
+          {{ row[column] }}
+        </td>
       </ng-container>
 
-      <ng-container matColumnDef="gender">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Gender</th>
-        <td mat-cell *matCellDef="let row">{{ row.gender }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="citizenship">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Citizenship</th>
-        <td mat-cell *matCellDef="let row">{{ row.citizenship }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="skills">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Skills</th>
-        <td mat-cell *matCellDef="let row">{{ row.skills }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="occupation">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Occupation</th>
-        <td mat-cell *matCellDef="let row">{{ row.occupation }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="memberOf">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Member Of</th>
-        <td mat-cell *matCellDef="let row">{{ row.memberOf }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="creator">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Creator</th>
-        <td mat-cell *matCellDef="let row">{{ row.creator }}</td>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-button (click)="editHero(row); $event.stopPropagation()">Edit</button>
+          <button mat-button color="warn" (click)="deleteHero(row); $event.stopPropagation()">
+            Delete
+          </button>
+        </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="columns"></tr>
       <tr
         mat-row
         *matRowDef="let row; columns: columns"
-        (click)="selectHero(row)"
-        class="clickable-row"
+        (click)="selectHero(row); $event.stopPropagation()"
       ></tr>
     </table>
   `,
@@ -69,18 +54,40 @@ import { HeroEntity } from '../../../domain/entities/hero.entity';
       .clickable-row {
         cursor: pointer;
       }
+
+      mat-button {
+        text-transform: none;
+        padding: 0;
+        min-width: auto;
+        font-size: 0.75rem;
+      }
     `
   ],
   standalone: true,
-  imports: [MatTableModule, MatSortModule]
+  imports: [MatTableModule, MatSortModule, MatButtonModule, NgForOf, TitleCasePipe]
 })
 export class HeroTableComponent implements OnChanges, AfterViewInit {
   @Input() data: HeroEntity[] | null = [];
   @ViewChild(MatSort) sort!: MatSort;
+
+  @Output() onHeroDeleted = new EventEmitter<string>();
+  @Output() onHeroEdited = new EventEmitter<HeroEntity>();
   @Output() onHeroSelected = new EventEmitter<HeroEntity>();
 
-  dataSource = new MatTableDataSource<HeroEntity>();
-  columns = ['name', 'gender', 'citizenship', 'skills', 'occupation', 'memberOf', 'creator'];
+  readonly dataSource = new MatTableDataSource<HeroEntity>();
+
+  readonly columnsData = [
+    'id',
+    'name',
+    'gender',
+    'citizenship',
+    'skills',
+    'occupation',
+    'memberOf',
+    'creator'
+  ];
+
+  readonly columns = [...this.columnsData, 'actions'];
 
   ngOnChanges({ data }: SimpleChanges) {
     if (data) {
@@ -94,5 +101,17 @@ export class HeroTableComponent implements OnChanges, AfterViewInit {
 
   selectHero(hero: HeroEntity): void {
     this.onHeroSelected.emit(hero);
+  }
+
+  editHero(hero: HeroEntity): void {
+    this.onHeroEdited.emit(hero);
+  }
+
+  deleteHero(hero: HeroEntity): void {
+    this.onHeroDeleted.emit(hero.id);
+  }
+
+  isHiddenColumn(column: string): boolean {
+    return column === 'id';
   }
 }

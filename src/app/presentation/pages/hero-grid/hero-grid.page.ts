@@ -12,7 +12,12 @@ import { MatButton } from '@angular/material/button';
   template: `
     <button mat-raised-button color="primary" (click)="addHero()">Create Hero</button>
     <app-hero-filter (onFilterChange)="searchHeroes($event)"></app-hero-filter>
-    <app-hero-table [data]="heroes$ | async" (onHeroSelected)="viewHero($event)"></app-hero-table>
+    <app-hero-table
+      [data]="heroes$ | async"
+      (onHeroEdited)="editHero($event)"
+      (onHeroSelected)="viewHero($event)"
+      (onHeroDeleted)="deleteHero($event)"
+    ></app-hero-table>
   `,
   styles: [
     `
@@ -47,6 +52,11 @@ export class HeroGridPage implements OnInit {
     this.viewModel.addHero();
   }
 
-  onEditHero(hero: HeroEntity): void {}
-  onRemoveHero(heroName: string): void {}
+  editHero(hero: HeroEntity): void {
+    this.viewModel.editHero(hero);
+  }
+
+  deleteHero(heroId: string): void {
+    this.viewModel.deleteHero(heroId);
+  }
 }

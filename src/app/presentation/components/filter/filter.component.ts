@@ -10,7 +10,7 @@ import { NgForOf } from '@angular/common';
   selector: 'app-hero-filter',
   template: `
     <mat-form-field class="hero-names-list" appearance="fill">
-      <mat-label>Hero name filter</mat-label>
+      <mat-label>Hero filter</mat-label>
       <mat-chip-grid #chipGrid aria-label="Hero name selection">
         <input
           [formControl]="heroNameControl"

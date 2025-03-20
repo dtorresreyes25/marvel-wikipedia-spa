@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HeroRepository } from '../domain/repository/hero.repository';
+import { HeroEntity } from '../domain/entities/hero.entity';
 
 @Injectable({
   providedIn: 'root'
 })
-export class RemoveHeroUseCase {
+export class EditHeroUseCase {
   constructor(private heroRepository: HeroRepository) {}
 
-  execute(heroId: string): void {
-    this.heroRepository.removeHero(heroId);
+  execute(hero: HeroEntity): void {
+    this.heroRepository.editHero(hero);
   }
 }

@@ -1,4 +1,8 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export class HeroEntity {
+  public readonly id: string;
+
   constructor(
     public readonly name: string,
     public readonly gender: string,
@@ -8,6 +12,7 @@ export class HeroEntity {
     public readonly memberOf: string,
     public readonly creator: string
   ) {
+    this.id = uuidv4();
     this.validate();
   }
 

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HeroEntity } from '../../domain/entities/hero.entity';
-import { HeroApiResponse } from '../../domain/repository/hero.repository';
 import { HeroMapper } from '../../domain/mapper/hero.mapper';
 
 @Injectable({
@@ -10,15 +9,20 @@ import { HeroMapper } from '../../domain/mapper/hero.mapper';
 })
 export class HeroRepositoryService {
   private readonly apiUrl = 'assets/heroes.json';
-  private readonly heroListSubject = new BehaviorSubject<HeroEntity[]>([]);
+  private readonly heroListSubject = new BehaviorSubject<HeroEntity[]>(
+    this.loadHeroesFromStorage()
+  );
 
   constructor(private readonly http: HttpClient) {
-    this.loadHeroes();
+    if (this.heroListSubject.value.length === 0) {
+      this.loadHeroesFromApi();
+    }
   }
 
-  private loadHeroes(): void {
-    this.http.get<HeroApiResponse[]>(this.apiUrl).subscribe((response) => {
-      this.setHeroes(HeroMapper.fromApi(response));
+  private loadHeroesFromApi(): void {
+    this.http.get<any[]>(this.apiUrl).subscribe((response) => {
+      const heroes = HeroMapper.fromApi(response);
+      this.updateHeroes(heroes);
     });
   }
 
@@ -36,15 +40,33 @@ export class HeroRepositoryService {
 
   addHero(hero: HeroEntity): void {
     if (!this.heroExists(hero.name)) {
-      this.setHeroes([hero, ...this.getHeroes()]);
+      this.updateHeroes([hero, ...this.getHeroes()]);
     }
   }
 
-  removeHero(heroName: string): void {
-    this.setHeroes(this.getHeroes().filter((hero) => hero.name !== heroName));
+  editHero(updatedHero: HeroEntity): void {
+    const heroes = this.getHeroes().map((hero) =>
+      hero.id === updatedHero.id ? updatedHero : hero
+    );
+    this.updateHeroes(heroes);
   }
 
-  private setHeroes(heroes: HeroEntity[]): void {
+  removeHero(heroId: string): void {
+    const heroes = this.getHeroes().filter((hero) => hero.id !== heroId);
+    this.updateHeroes(heroes);
+  }
+
+  private updateHeroes(heroes: HeroEntity[]): void {
     this.heroListSubject.next(heroes);
+    this.saveHeroesToStorage(heroes);
+  }
+
+  private saveHeroesToStorage(heroes: HeroEntity[]): void {
+    localStorage.setItem('heroes', JSON.stringify(heroes));
+  }
+
+  private loadHeroesFromStorage(): HeroEntity[] {
+    const storedHeroes = localStorage.getItem('heroes');
+    return storedHeroes ? JSON.parse(storedHeroes) : [];
   }
 }

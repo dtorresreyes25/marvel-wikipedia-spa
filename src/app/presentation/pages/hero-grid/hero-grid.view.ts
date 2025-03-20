@@ -8,15 +8,17 @@ import { GetHeroesUseCase } from '../../../application/get-heroes.use-case';
 import { MatDialog } from '@angular/material/dialog';
 import { HeroViewComponent } from '../../components/hero-view/hero-view.component';
 import { HeroFormComponent } from '../../components/hero-form/hero-form.component';
+import { EditHeroUseCase } from '../../../application/edit-hero.use-case';
 
 @Injectable()
 export class HeroGridPageViewModel {
   constructor(
-    private getHeroesUseCase: GetHeroesUseCase,
+    private dialog: MatDialog,
     private addHeroUseCase: AddHeroUseCase,
+    private editHeroUseCase: EditHeroUseCase,
+    private getHeroesUseCase: GetHeroesUseCase,
     private removeHeroUseCase: RemoveHeroUseCase,
-    private searchHeroesUseCase: SearchHeroesUseCase,
-    private dialog: MatDialog
+    private searchHeroesUseCase: SearchHeroesUseCase
   ) {}
 
   getHeroes(): Observable<HeroEntity[]> {
@@ -37,8 +39,20 @@ export class HeroGridPageViewModel {
     });
   }
 
-  removeHero(heroName: string): void {
-    this.removeHeroUseCase.execute(heroName);
+  editHero(hero: HeroEntity): void {
+    const dialogRef = this.dialog.open(HeroFormComponent, {
+      data: hero
+    });
+
+    dialogRef.afterClosed().subscribe((updatedHero) => {
+      if (updatedHero) {
+        this.editHeroUseCase.execute(updatedHero);
+      }
+    });
+  }
+
+  deleteHero(heroId: string): void {
+    this.removeHeroUseCase.execute(heroId);
   }
 
   viewHero(hero: HeroEntity): void {

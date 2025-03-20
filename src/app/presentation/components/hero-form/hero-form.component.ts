@@ -1,19 +1,25 @@
-import { Component } from '@angular/core';
-import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { Component, Inject } from '@angular/core';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialogTitle,
+  MatDialogModule
+} from '@angular/material/dialog';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HeroEntity } from '../../../domain/entities/hero.entity';
+import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-hero-form',
   template: `
-    <h2 mat-dialog-title>Create Hero</h2>
+    <h2 mat-dialog-title>{{ data ? 'Edit Hero' : 'Create Hero' }}</h2>
     <mat-dialog-content>
       <form [formGroup]="heroForm" (ngSubmit)="submit()">
         <div class="form-grid">
+          <input type="hidden" formControlName="id" />
+
           <mat-form-field>
             <mat-label>Name</mat-label>
             <input matInput formControlName="name" required />
@@ -44,16 +50,16 @@ import { CommonModule } from '@angular/common';
             <input matInput formControlName="memberOf" />
           </mat-form-field>
 
-          <mat-form-field class="full-width">
+          <mat-form-field>
             <mat-label>Creator</mat-label>
             <input matInput formControlName="creator" />
           </mat-form-field>
-        </div>
 
-        <div class="button-container">
-          <button mat-raised-button color="primary" type="submit" [disabled]="heroForm.invalid">
-            Create
-          </button>
+          <div class="button-container">
+            <button mat-raised-button color="primary" type="submit" [disabled]="heroForm.invalid">
+              {{ data ? 'Save Changes' : 'Create' }}
+            </button>
+          </div>
         </div>
       </form>
     </mat-dialog-content>
@@ -64,10 +70,6 @@ import { CommonModule } from '@angular/common';
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
-      }
-
-      .full-width {
-        grid-column: span 2;
       }
 
       .button-container {
@@ -83,9 +85,11 @@ import { CommonModule } from '@angular/common';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatExpansionModule,
     ReactiveFormsModule,
-    CommonModule
+    MatInput,
+    ReactiveFormsModule,
+    MatDialogTitle,
+    MatButton
   ]
 })
 export class HeroFormComponent {
@@ -93,16 +97,18 @@ export class HeroFormComponent {
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<HeroFormComponent>
+    private dialogRef: MatDialogRef<HeroFormComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: HeroEntity | null
   ) {
     this.heroForm = this.fb.group({
-      name: ['', Validators.required],
-      gender: [''],
-      citizenship: [''],
-      skills: [''],
-      occupation: [''],
-      memberOf: [''],
-      creator: ['']
+      id: [data?.id || ''],
+      name: [data?.name || '', Validators.required],
+      gender: [data?.gender || ''],
+      citizenship: [data?.citizenship || ''],
+      skills: [data?.skills || ''],
+      occupation: [data?.occupation || ''],
+      memberOf: [data?.memberOf || ''],
+      creator: [data?.creator || '']
     });
   }
 
